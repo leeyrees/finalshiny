@@ -15,6 +15,7 @@ library(ggplot2)
 library(shinythemes)
 library(plotly)
 require("shinyjs")
+
 data("Backpack")
 Backpack$BackProblems = as.factor(Backpack$BackProblems)
 Backpack$Major = as.factor(Backpack$Major)
@@ -22,7 +23,8 @@ Backpack$Sex = as.factor(Backpack$Sex)
 Backpack$Status = as.factor(Backpack$Status)
 
 infoPanel<- tabPanel(title = "About this Shiny",
-                     mainPanel(p("In this shiny app, we a")))
+                     mainPanel(p("In this shiny app, we are going to analyse the data set Backpack, which contains information about students at California Polytechnic State University (San Luis Obispo) in order to
+investigate the question of whether back aches might be due to carrying heavy backpacks")))
 
 dataPanel <- tabPanel("Data",fluidPage( 
         p("Here we can see the whole data set"),
@@ -126,7 +128,7 @@ server <- function(input, output) {
     
     output$report <- downloadHandler(
         # For PDF output, change this to "report.pdf"
-        filename = "report.html",
+        filename = "report.pdf",
         content = function(file) {
            
             tempReport <- file.path(tempdir(), "report.Rmd")
