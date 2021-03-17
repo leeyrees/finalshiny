@@ -82,7 +82,18 @@ regPanel <- tabPanel(title = "A simple regression",
                         )
                     )
 )
-
+refPanel <- tabPanel("References",
+                     p(tags$button(
+                         class="btn btn-default", 
+                         `data-toggle`="collapse", 
+                         `data-target`="#collapseExample",
+                         "References")),
+                     div(class="collapse", id="collapseExample",
+                         div(class="card card-body",
+                             includeMarkdown("References.md")
+                         )
+                     )
+)
 # Define UI for application that draws a histogram
 ui <- navbarPage("shiny App",
                  theme = shinytheme("united"),
@@ -90,7 +101,8 @@ ui <- navbarPage("shiny App",
                  dataPanel,
                  plotPanel,
                  dinPanel, 
-                 regPanel
+                 regPanel,
+                 refPanel
                  
 )
 
@@ -147,6 +159,7 @@ server <- function(input, output) {
             )
         }
     )
+    
             
 }
 
