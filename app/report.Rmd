@@ -11,6 +11,15 @@ params:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(shiny)
+library(Stat2Data)
+library(tidyverse)
+library(ggcorrplot)
+library(ggplot2)
+library(shinythemes)
+library(plotly)
+require("shinyjs")
+devtools::install_github('rstudio/rmarkdown')
 ```
 
 ```{r}
@@ -18,13 +27,12 @@ data("Backpack")
 ```
 
 ```{r}
-output$reg <- renderPlotly({
-         model<- as.formula(paste(input$y, " ~ ", input$x))
+         model<- as.formula(paste(params$y, " ~ ", params$x))
         fit <- glm(model, data = Backpack)
-        ggplot(data = Backpack, aes_string(x = input$x, y = input$y)) +
+        ggplot(data = Backpack, aes_string(x = params$x, y = params$y)) +
             geom_point() + 
             geom_smooth(method = "glm") +
-            theme_bw()})
+            theme_bw()
     
 ```
 
