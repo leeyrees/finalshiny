@@ -70,8 +70,8 @@ regPanel <- tabPanel(title = "A simple regression",
                     useShinyjs(),
                     sidebarLayout(
                         sidebarPanel(
-                            radioButtons("y", label = "Select the target variable:",  choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units","BackProblems", "Major","Sex","Status")),
-                            radioButtons("x", label = "Select the predictor variable:", choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units","BackProblems", "Major","Sex","Status")),
+                            radioButtons("y", label = "Select the target variable:",  choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units")),
+                            radioButtons("x", label = "Select the predictor variable:", choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units")),
 
                             downloadButton("report", "Generate report")
                         ),
@@ -113,24 +113,22 @@ server <- function(input, output) {
         plot_ly(Backpack, x = ~BackpackWeight, y = ~BodyWeight, type = "scatter", mode = "markers",
                 color = ~BackProblems) %>% 
             layout(title = "Back problems in function of body weight and ",
-                   xaxis = list(title = "Total_Trans_Amt"), 
-                   yaxis = list(title = "Total_Trans_Ct"))
+                   xaxis = list(title = "BackpackWeight"), 
+                   yaxis = list(title = "BodyWeight"))
     })
     output$reg <- renderPlotly({
-        form <- as.formula(paste(input$y, " ~ ", input$x))
-        fit <- glm(form, data = Backpack)
+         model<- as.formula(paste(input$y, " ~ ", input$x))
+        fit <- glm(model, data = Backpack)
         ggplot(data = Backpack, aes_string(x = input$x, y = input$y)) +
             geom_point() + 
-            geom_smooth(method = "lm") +
+            geom_smooth(method = "glm") +
             theme_bw()})
     
     output$report <- downloadHandler(
         # For PDF output, change this to "report.pdf"
         filename = "report.html",
         content = function(file) {
-            # Copy the report file to a temporary directory before processing it, in
-            # case we don't have write permissions to the current working dir (which
-            # can happen when deployed).
+           
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("report.Rmd", tempReport, overwrite = TRUE)
             
@@ -139,9 +137,7 @@ server <- function(input, output) {
                 x = isolate(input$x), 
                 y = isolate(input$y)
             )
-            # Knit the document, passing in the `params` list, and eval it in a
-            # child of the global environment (this isolates the code in the document
-            # from the code in this app).
+            
             rmarkdown::render(tempReport, 
                               output_file = file,
                               params = params,
