@@ -16,8 +16,10 @@ library(shinythemes)
 library(plotly)
 require("shinyjs")
 data("Backpack")
-
-
+Backpack$BackProblems = as.factor(Backpack$BackProblems)
+Backpack$Major = as.factor(Backpack$Major)
+Backpack$Sex = as.factor(Backpack$Sex)
+Backpack$Status = as.factor(Backpack$Status)
 
 infoPanel<- tabPanel(title = "About this Shiny",
                      mainPanel(p("In this shiny app....")))
@@ -27,57 +29,38 @@ dataPanel <- tabPanel("Data",fluidPage(
         dataTableOutput("data")
     ))
     
+plotPanel = tabPanel("Plots of the variables",
+                     fluidPage(
+                         sidebarLayout(position = "right",
+                                       sidebarPanel(
+                                           selectInput("var1", label = h3("Select the qualitative variable "),
+                                                       choices = c("BackProblems", "Major","Sex","Status"),
+                                                       selected = "BackProblems"),
+                                           selectInput("var2", label = h3("Select the numerical variable"), 
+                                                       choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units"),
+                                                       selected = "BackpackWeight"),
+                                           selectInput("var", label = h3("Select the variable"), 
+                                                       choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units"),
+                                                       selected = 1),
+                                           sliderInput("n_bins", label = h3("Number of bins"), min = 1, 
+                                                       max = 20, value = 5)
+                                           
+                                       ),
+                                       mainPanel( plotOutput("boxplot"),
+                                                 br(),
+                                                 plotOutput("histplot"))
+                             
+                         )
+                     ),
+                     )
 
 
 
-plotPanel=tabPanel("Plot",fluidPage(
-         sidebarLayout(position = "right",
-             sidebarPanel(
-                 radioButtons(
-                     inputId="Item",
-                     label="Choose your plot",
-                     choices=list("Histogram","Boxplot"),
-                     selected='Histogram'),
-                 #only show this when Item 1 is selected
-                 #user choose either 1 or 2 to display to display
-                 conditionalPanel(
-                     condition="input.Item == 'Histogram' ",
-                     selectInput("var", label = h3("Select the variable"), 
-                                 choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units"),
-                                 selected = 1),
-                     sliderInput("n_bins", label = h3("Number of bins"), min = 1, 
-                                 max = 20, value = 5)
-                 ),
-                 #only show this when Item 2 is selected
-                 conditionalPanel(
-                     condition="input.Item == 'Boxplot' ",
-                     selectInput("var1", label = h3("Select the qualitative variable "),
-                                 choices = c("BackProblem", "Major","Sex","Status"),
-                                 selected = "BackProblem"),
-                     selectInput("var2", label = h3("Select the numerical variable"), 
-                                 choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units"),
-                                 selected = "BackpackWeight")
-                 ),
-                 
-             ),
-             mainPanel(conditionalPanel(
-                 condition = "input.view == 'Boxplot'",
-                 plotOutput("boxplot")
-             ),
-             conditionalPanel(
-                 condition = "input.view == 'Histogram'",
-                 plotOutput("histplot")
-             )
-         )
-),
-)
-)
 dinPanel <- tabPanel( "Plotly Graph",
                      useShinyjs(),
                      cellWidths = 300,
                      cellArgs = list(style = "padding: 6px"),
                      h3("In this section we can visualize the variables through a dymanic graph"),
-                     br(),
                      br(),
                      column(6,plotlyOutput(outputId = "plotly1"),height="600px"),
                      
@@ -104,9 +87,13 @@ server <- function(input, output) {
             geom_histogram(bins = input$n_bins, fill = "mediumturquoise", color="grey97") +
             theme_bw()
     })
-    output$boxplot <- renderPlot({ggplot(data = Backpack, aes(x=input$var1, y=input$var2)) + 
-        geom_boxplot()
-    })   
+    
+    output$boxplot <- renderPlot({
+        ggplot(data=Backpack, aes_string( input$var1, input$var2)) + 
+            geom_boxplot(aes_string(fill = input$var2), color = "coral1", fill = "orange", alpha = 0.2)+  
+            theme(legend.position="none") 
+            
+    })
     output$plotly1 <- renderPlotly({
         plot_ly(Backpack, x = ~BackpackWeight, y = ~BodyWeight, type = "scatter", mode = "markers",
                 color = ~BackProblems) %>% 
