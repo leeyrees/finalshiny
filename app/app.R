@@ -22,7 +22,7 @@ Backpack$Sex = as.factor(Backpack$Sex)
 Backpack$Status = as.factor(Backpack$Status)
 
 infoPanel<- tabPanel(title = "About this Shiny",
-                     mainPanel(p("In this shiny app....")))
+                     mainPanel(p("In this shiny app, we a")))
 
 dataPanel <- tabPanel("Data",fluidPage( 
         p("Here we can see the whole data set"),
@@ -39,16 +39,16 @@ plotPanel = tabPanel("Plots of the variables",
                                            selectInput("var2", label = h3("Select the numerical variable"), 
                                                        choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units"),
                                                        selected = "BackpackWeight"),
-                                           selectInput("var", label = h3("Select the variable"), 
+                                           selectInput("var", label = h3("Select the variable for the histogram"), 
                                                        choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units"),
                                                        selected = 1),
                                            sliderInput("n_bins", label = h3("Number of bins"), min = 1, 
                                                        max = 20, value = 5)
                                            
                                        ),
-                                       mainPanel( plotOutput("boxplot"),
-                                                 br(),
-                                                 plotOutput("histplot"))
+                                       mainPanel( tabsetPanel(type = "tabs",
+                                                              tabPanel("Box-plot", plotOutput("boxplot")),
+                                                              tabPanel("Histogram", plotOutput("histplot"))))
                              
                          )
                      ),
@@ -65,7 +65,21 @@ dinPanel <- tabPanel( "Plotly Graph",
                      column(6,plotlyOutput(outputId = "plotly1"),height="600px"),
                      
                      
-) #
+)
+regPanel <- tabPanel(title = "A simple regression",
+                    useShinyjs(),
+                    sidebarLayout(
+                        sidebarPanel(
+                            radioButtons("y", label = "Select the target variable:",  choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units","BackProblems", "Major","Sex","Status")),
+                            radioButtons("x", label = "Select the predictor variable:", choices = c("BackpackWeight","BodyWeight","Ratio","Year","Units","BackProblems", "Major","Sex","Status")),
+
+                            downloadButton("report", "Generate report")
+                        ),
+                        mainPanel(
+                            plotlyOutput("reg")
+                        )
+                    )
+)
 
 # Define UI for application that draws a histogram
 ui <- navbarPage("shiny App",
@@ -73,7 +87,8 @@ ui <- navbarPage("shiny App",
                  infoPanel,
                  dataPanel,
                  plotPanel,
-                 dinPanel
+                 dinPanel, 
+                 regPanel
                  
 )
 
@@ -101,6 +116,40 @@ server <- function(input, output) {
                    xaxis = list(title = "Total_Trans_Amt"), 
                    yaxis = list(title = "Total_Trans_Ct"))
     })
+    output$reg <- renderPlotly({
+        form <- as.formula(paste(input$y, " ~ ", input$x))
+        fit <- glm(form, data = Backpack)
+        ggplot(data = Backpack, aes_string(x = input$x, y = input$y)) +
+            geom_point() + 
+            geom_smooth(method = "lm") +
+            theme_bw()})
+    
+    output$report <- downloadHandler(
+        # For PDF output, change this to "report.pdf"
+        filename = "report.html",
+        content = function(file) {
+            # Copy the report file to a temporary directory before processing it, in
+            # case we don't have write permissions to the current working dir (which
+            # can happen when deployed).
+            tempReport <- file.path(tempdir(), "report.Rmd")
+            file.copy("report.Rmd", tempReport, overwrite = TRUE)
+            
+            # Set up parameters to pass to Rmd document
+            params <- list(
+                x = isolate(input$x), 
+                y = isolate(input$y)
+            )
+            # Knit the document, passing in the `params` list, and eval it in a
+            # child of the global environment (this isolates the code in the document
+            # from the code in this app).
+            rmarkdown::render(tempReport, 
+                              output_file = file,
+                              params = params,
+                              envir = new.env(parent = globalenv())
+            )
+        }
+    )
+            
 }
 
 # Run the application 
