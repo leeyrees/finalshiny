@@ -1,0 +1,30 @@
+---
+title: "Report"
+author: "Leyre Sastre"
+date: "17/3/2021"
+output: html_document
+params:
+  y: "BackpackWeight"
+  x: "BodyWeight"
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data("Backpack")
+```
+
+```{r}
+output$reg <- renderPlotly({
+         model<- as.formula(paste(input$y, " ~ ", input$x))
+        fit <- glm(model, data = Backpack)
+        ggplot(data = Backpack, aes_string(x = input$x, y = input$y)) +
+            geom_point() + 
+            geom_smooth(method = "glm") +
+            theme_bw()})
+    
+```
+
