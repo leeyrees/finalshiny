@@ -68,7 +68,8 @@ dinPanel <- tabPanel( "Plotly Graph",
                      
                      
 )
-regPanel <- tabPanel(title = "A simple regression",
+regPanel <- tabPanel("Regression model",
+                     p("In this section  we will be able to analyse the numerical variables thorugh a regression model."),
                     useShinyjs(),
                     sidebarLayout(
                         sidebarPanel(
