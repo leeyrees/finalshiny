@@ -24,7 +24,7 @@ Backpack$Status = as.factor(Backpack$Status)
 
 infoPanel<- tabPanel(title = "About this Shiny",
                      mainPanel(p("In this shiny app, we are going to analyse the data set Backpack, which contains information about students at California Polytechnic State University (San Luis Obispo) in order to
-investigate the question of whether back aches might be due to carrying heavy backpacks")))
+investigate the question of whether back aches might be due to carrying heavy backpacks. We will be able to analyse visually the variables and also through a regression model.")))
 
 dataPanel <- tabPanel("Data",fluidPage( 
         p("Here we can see the whole data set"),
